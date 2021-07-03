@@ -84,7 +84,8 @@ func (m *DBModel) Connect() error {
 func (m *DBModel) GetColumns(dbName, tableName string) ([]*TableColumn, error) {
 	query := "SELECT COLUMN_NAME, DATA_TYPE, COLUMN_KEY, " +
 		"IS_NULLABLE, COLUMN_TYPE, COLUMN_COMMENT " +
-		"FROM COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? "
+		"FROM COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? " +
+		"ORDER BY ORDINAL_POSITION"
 	rows, err := m.DBEngine.Query(query, dbName, tableName)
 	if err != nil {
 		return nil, err
@@ -97,7 +98,14 @@ func (m *DBModel) GetColumns(dbName, tableName string) ([]*TableColumn, error) {
 	var columns []*TableColumn
 	for rows.Next() {
 		var column TableColumn
-		err := rows.Scan(&column.ColumnName, &column.DataType, &column.ColumnKey, &column.IsNullable, &column.ColumnType, &column.ColumnComment)
+		err := rows.Scan(
+			&column.ColumnName,
+			&column.DataType,
+			&column.ColumnKey,
+			&column.IsNullable,
+			&column.ColumnType,
+			&column.ColumnComment,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -106,4 +114,26 @@ func (m *DBModel) GetColumns(dbName, tableName string) ([]*TableColumn, error) {
 	}
 
 	return columns, nil
+}
+
+func (m *DBModel) GetTableComment(dbName, tableName string) (string, error) {
+	query := "SELECT TABLE_COMMENT FROM TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? "
+	rows, err := m.DBEngine.Query(query, dbName, tableName)
+	if err != nil {
+		return "", err
+	}
+	if rows == nil {
+		return "", errors.New("没有数据")
+	}
+	defer rows.Close()
+
+	var TableComment string
+	for rows.Next() {
+		err := rows.Scan(&TableComment)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return TableComment, nil
 }
