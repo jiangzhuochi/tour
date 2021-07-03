@@ -12,13 +12,13 @@ const strcutTpl = `
 // {{.TableComment}}
 type {{.TableName | ToCamelCase}} struct {
 {{range .Columns -}} 
-	{{$length := len .Comment -}}
-	{{if gt $length 0}}    // {{.Comment}}{{else}}    // {{.Name}}{{end -}}
-	{{$length := len .ColumnKey -}}
-	{{if gt $length 0}}    {{.ColumnKey}}{{end -}}
-	{{if eq .IsNullable "YES"}}    Nullable{{end}}
+    {{$length := len .Comment -}}
+    {{if gt $length 0}}    // {{.Comment}}{{else}}    // {{.Name}}{{end -}}
+    {{$length := len .ColumnKey -}}
+    {{if gt $length 0}}    {{.ColumnKey}}{{end -}}
+    {{if eq .IsNullable "YES"}}    Nullable{{end}}
     {{$typeLen := len .Type -}} 
-	{{if gt $typeLen 0}}{{.Name|ToCamelCase}} {{.Type}} {{.Tag}}{{else}}{{.Name}}{{end}}
+    {{if gt $typeLen 0}}{{.Name|ToCamelCase}} {{.Type}} {{.Tag}}{{else}}{{.Name}}{{end}}
 {{end}}}
 
 func (model {{.TableName|ToCamelCase}}) TableName() string {
@@ -53,7 +53,7 @@ func NewStructTemplate() *StructTemplate {
 func (t *StructTemplate) AssemblyColumns(tbColumns []*TableColumn) []*StructColumn {
 	tplColumns := make([]*StructColumn, 0, len(tbColumns))
 	for _, column := range tbColumns {
-		tag := fmt.Sprintf("`"+"json:"+"\"%s\""+"`", column.ColumnName)
+		tag := fmt.Sprintf("`json:%q`", column.ColumnName)
 		tplColumns = append(tplColumns, &StructColumn{
 			Name:       column.ColumnName,
 			Type:       DBTypeToStructType[column.DataType],
